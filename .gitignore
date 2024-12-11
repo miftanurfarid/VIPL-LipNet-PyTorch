@@ -4,3 +4,4 @@ weights
 __pycache__
 GRID_align_txt
 lip
+*.mpg
