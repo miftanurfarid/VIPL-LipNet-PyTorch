@@ -100,8 +100,9 @@ def load_video(file):
     
     array = list(filter(lambda im: not im is None, array))
     #array = [cv2.resize(im, (100, 50), interpolation=cv2.INTER_LANCZOS4) for im in array]
-    
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False, device='cuda')
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False, device=device)
     points = [fa.get_landmarks(I) for I in array]
     
     front256 = get_position(256)
@@ -138,14 +139,13 @@ def ctc_decode(y):
 if(__name__ == '__main__'):
     opt = __import__('options')
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpu    
-    
-    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = LipNet()
-    model = model.cuda()
-    net = nn.DataParallel(model).cuda()
+    model = model.to(device)
+    net = nn.DataParallel(model).to(device)
 
     if(hasattr(opt, 'weights')):
-        pretrained_dict = torch.load(opt.weights)
+        pretrained_dict = torch.load(opt.weights, map_location=device, weights_only=True)
         model_dict = model.state_dict()
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict.keys() and v.size() == model_dict[k].size()}
         missed_params = [k for k, v in model_dict.items() if not k in pretrained_dict.keys()]
@@ -155,12 +155,12 @@ if(__name__ == '__main__'):
         model.load_state_dict(model_dict)
         
     video, img_p = load_video(sys.argv[1])
-    y = model(video[None,...].cuda())
+    y = model(video[None,...].to(device))
     txt = ctc_decode(y[0])
-    
     output_video(img_p, txt, sys.argv[2])
-    
+
+    print("==" * 30)
+    print(f"predicted text: {txt[-1]}")
+    print("==" * 30)
+
     shutil.rmtree(img_p)
-    
-    
-    

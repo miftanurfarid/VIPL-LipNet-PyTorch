@@ -41,6 +41,8 @@ def ctc_decode(y):
     
 def test(model, net):
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     with torch.no_grad():
         dataset = MyDataset(opt.video_path,
             opt.anno_path,
@@ -58,10 +60,10 @@ def test(model, net):
         crit = nn.CTCLoss()
         tic = time.time()
         for (i_iter, input) in enumerate(loader):            
-            vid = input.get('vid').cuda()
-            txt = input.get('txt').cuda()
-            vid_len = input.get('vid_len').cuda()
-            txt_len = input.get('txt_len').cuda()
+            vid = input.get('vid').to(device)
+            txt = input.get('txt').to(device)
+            vid_len = input.get('vid_len').to(device)
+            txt_len = input.get('txt_len').to(device)
             
             y = net(vid)
             
@@ -88,7 +90,9 @@ def test(model, net):
         return (np.array(loss_list).mean(), np.array(wer).mean(), np.array(cer).mean())
     
 def train(model, net):
-    
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     dataset = MyDataset(opt.video_path,
         opt.anno_path,
         opt.train_list,
@@ -110,10 +114,10 @@ def train(model, net):
     for epoch in range(opt.max_epoch):
         for (i_iter, input) in enumerate(loader):
             model.train()
-            vid = input.get('vid').cuda()
-            txt = input.get('txt').cuda()
-            vid_len = input.get('vid_len').cuda()
-            txt_len = input.get('txt_len').cuda()
+            vid = input.get('vid').to(device)
+            txt = input.get('txt').to(device)
+            vid_len = input.get('vid_len').to(device)
+            txt_len = input.get('txt_len').to(device)
             
             optimizer.zero_grad()
             y = net(vid)
@@ -162,11 +166,12 @@ def train(model, net):
 if(__name__ == '__main__'):
     print("Loading options...")
     model = LipNet()
-    model = model.cuda()
-    net = nn.DataParallel(model).cuda()
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = model.to(device)
+    net = nn.DataParallel(model).to(device)
 
     if(hasattr(opt, 'weights')):
-        pretrained_dict = torch.load(opt.weights)
+        pretrained_dict = torch.load(opt.weights, map_location=device, weights_only=True)
         model_dict = model.state_dict()
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict.keys() and v.size() == model_dict[k].size()}
         missed_params = [k for k, v in model_dict.items() if not k in pretrained_dict.keys()]

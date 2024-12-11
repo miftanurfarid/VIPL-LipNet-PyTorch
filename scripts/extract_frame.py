@@ -13,10 +13,10 @@ import time
 class MyDataset(Dataset):
     
     def __init__(self):
-        self.IN = 'GRID/'
-        self.OUT = 'GRID_imgs/'
+        self.IN = 'GRID/' # isi file video
+        self.OUT = 'GRID_imgs/' # sepertinya isi dari frame hasil extract
 
-        self.wav = 'GRID_wavs/'
+        self.wav = 'GRID_wavs/' # sepertinya isi dari frame hasil extract
 
         with open('GRID_files.txt', 'r') as f:
             files = [line.strip() for line in f.readlines()]
