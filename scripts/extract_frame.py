@@ -1,4 +1,4 @@
-from scipy.misc import imsave
+#from scipy.misc import imsave
 import dlib
 import os
 import glob
