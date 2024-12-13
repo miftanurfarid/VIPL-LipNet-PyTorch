@@ -5,15 +5,19 @@ import cv2
 import face_alignment
 from multiprocessing import Pool, Process, Queue
 import time
+import torch
+from tqdm import tqdm
 
 
-def run(gpu, files):
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
-    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False, device='cuda')
-    print('gpu={},n_files={}'.format(gpu, len(files)))
+def run(files):
+    #os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False, device=device)
+    #print('gpu={},n_files={}'.format(gpu, len(files)))
+    print('n_files={}'.format(len(files)))
     tic = time.time()
     count = 0
-    for (img_name, savename) in files:
+    for (img_name, savename) in tqdm(files, desc="Processing files"):
         I = cv2.imread(img_name)
         points_list = fa.get_landmarks(I)
         
@@ -38,18 +42,21 @@ if(__name__ == '__main__'):
         dir, _ = os.path.split(dst)
         if(not os.path.exists(dir)):
             os.makedirs(dir)
-       
-    processes = []
-    n_p = 3
-    gpus = ['1', '2', '3']
-    bs = len(data) // n_p
-    for i in range(n_p):
-        if(i == n_p - 1):
-            bs = len(data)
-        p = Process(target=run, args=(gpus[i],data[:bs],))
-        data = data[bs:]
-        p.start()
-        processes.append(p)
-    assert(len(data) == 0)
-    for p in processes:
-        p.join()
+
+    p = Process(target=run, args=(data,))
+    p.start()
+    p.join()
+#    processes = []
+#    n_p = 3
+#    gpus = ['1', '2', '3']
+#    bs = len(data) // n_p
+#    for i in range(n_p):
+#        if(i == n_p - 1):
+#            bs = len(data)
+#        p = Process(target=run, args=(gpus[i],data[:bs],))
+#        data = data[bs:]
+#        p.start()
+#        processes.append(p)
+#    assert(len(data) == 0)
+#    for p in processes:
+#        p.join()
