@@ -4,6 +4,7 @@ import numpy as np
 from multiprocessing import Pool, Process, Queue
 import time
 import os
+from tqdm import tqdm
 
 
 def get_position(size, padding=0.25):
@@ -104,20 +105,20 @@ def anno_img(img_dir, anno_dir, save_dir):
 def run(files):
     tic = time.time()
     count = 0
-    print('n_files:{}'.format(len(files)))
-    for (img_dir, anno_dir, save_dir) in files:
+    #print('n_files:{}'.format(len(files)))
+    for (img_dir, anno_dir, save_dir) in tqdm(files, desc="Processing files: "):
         anno_img(img_dir, anno_dir, save_dir)
         count += 1
         if(count % 1000 == 0):
             print('eta={}'.format((time.time()-tic)/(count) * (len(files) - count) / 3600.0))
 
 if(__name__ == '__main__'):
-    with open('grid.txt', 'r') as f:
+    with open('imgs.txt', 'r') as f:
         data = [line.strip() for line in f.readlines()]
         data = list(set([os.path.split(file)[0] for file in data]))
 
     
-    annos = [name.replace('GRID_imgs', 'GRID_landmarks') for name in data]
+    annos = [name.replace('GRID_imgs', 'GRID_imgs') for name in data]
     targets = [name.replace('GRID_imgs', 'GRID_lip') for name in data]
     
     for dst in targets:

@@ -34,6 +34,15 @@ Following the original split, we use `s1`, `s2`, `s20`, `s22` in unseen speakers
 
 ## Data Preparation
 
+- Place GRID Corpus inside `data` folder. The directory will be like `data/GRID/s1/video/mpg_6000/bbaf2n.mpg`.
+- Open `scripts` folder.
+- Run `make_grid_files.sh`. It will generate `GRID_files.txt` inside `scripts` folders. This text file will be needed by `extract_frame.py`.
+- Run `extract_frame.py`. It will extract frames and wav files from video to `data/GRID_imgs` and `data\GRID_wavs`. You don't have to make those two folders, `data/GRID_imgs` and `data/GRID_wavs`, manually. It will make them automatically.
+- Run `make_grid_imgs_files.sh`. It will generate `imgs.txt`. This text file is need by `face_det_sfd.py`.
+- Run `face_det_sfd.py`. It will extract face landmarks from frames. Face landmarks will be saved in `data/GRID_imgs`. Be patient. It will take time.
+- Run `extract_lip.py`. It will crop lip from frames based on face landmarks.
+
+
 We provide cropped lip images and annotation files in the following links: 
 
 [BaiduYun (Code: jf0l)](https://pan.baidu.com/s/1I51Xf-DzP1UgrXF-S0L5tg)

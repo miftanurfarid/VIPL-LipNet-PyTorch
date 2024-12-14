@@ -1,6 +1,6 @@
 #!/bin/bash
 
-directory="GRID"
+directory="../data/GRID"
 
 find "$directory" -type f -name "*.mpg" > GRID_files.txt
 

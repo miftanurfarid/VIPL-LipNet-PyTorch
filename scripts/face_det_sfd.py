@@ -14,7 +14,7 @@ def run(files):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False, device=device)
     #print('gpu={},n_files={}'.format(gpu, len(files)))
-    print('n_files={}'.format(len(files)))
+    #print('n_files={}'.format(len(files)))
     tic = time.time()
     count = 0
     for (img_name, savename) in tqdm(files, desc="Processing files"):
@@ -43,20 +43,21 @@ if(__name__ == '__main__'):
         if(not os.path.exists(dir)):
             os.makedirs(dir)
 
-    p = Process(target=run, args=(data,))
-    p.start()
-    p.join()
-#    processes = []
-#    n_p = 3
-#    gpus = ['1', '2', '3']
-#    bs = len(data) // n_p
-#    for i in range(n_p):
-#        if(i == n_p - 1):
-#            bs = len(data)
-#        p = Process(target=run, args=(gpus[i],data[:bs],))
-#        data = data[bs:]
-#        p.start()
-#        processes.append(p)
-#    assert(len(data) == 0)
-#    for p in processes:
-#        p.join()
+#    p = Process(target=run, args=(data,))
+#    p.start()
+#    p.join()
+    processes = []
+    n_p = 4
+    #gpus = ['1', '2', '3']
+    bs = len(data) // n_p
+    for i in range(n_p):
+        if(i == n_p - 1):
+            bs = len(data)
+        #p = Process(target=run, args=(gpus[i],data[:bs],))
+        p = Process(target=run, args=(data[:bs],))
+        data = data[bs:]
+        p.start()
+        processes.append(p)
+    assert(len(data) == 0)
+    for p in processes:
+        p.join()
